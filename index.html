@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Shoots Virtual Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('/static/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chat-header img {
+            width: 50px;
+            height: 50px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .chat-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #4CAF50;
+        }
+        .chat-log {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        .chat-log p {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .chat-log .user {
+            background-color: #e1f5fe;
+            text-align: right;
+        }
+        .chat-log .bot {
+            background-color: #e8f5e9;
+            text-align: left;
+        }
+        .chat-input {
+            display: flex;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+        .chat-input button {
+            padding: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #45a049;
+        }
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="/static/icon.png" alt="Company Logo">
+            <h1>Little Shoots Chatbot</h1>
+        </div>
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message here..." onkeydown="if(event.key === 'Enter') sendMessage()" />
+            <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            if (userInput.trim() === "") return;
+
+            const chatLog = document.getElementById('chat-log');
+            const userMessage = document.createElement('p');
+            userMessage.textContent = userInput;
+            userMessage.className = 'user';
+            chatLog.appendChild(userMessage);
+
+            document.getElementById('user-input').value = "";
+
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
+            const response = await fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: userInput })
+            });
+            const data = await response.json();
+
+            loading.style.display = 'none';
+
+            const botMessage = document.createElement('p');
+            botMessage.textContent = data.response;
+            botMessage.className = 'bot';
+            chatLog.appendChild(botMessage);
+
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+    </script>
+</body>
+</html>
